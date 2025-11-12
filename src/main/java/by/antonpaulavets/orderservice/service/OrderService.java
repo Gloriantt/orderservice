@@ -1,43 +1,61 @@
 package by.antonpaulavets.orderservice.service;
 
 
+import by.antonpaulavets.orderservice.client.UserClient;
+import by.antonpaulavets.orderservice.dto.*;
+import by.antonpaulavets.orderservice.mapper.OrderMapper;
 import by.antonpaulavets.orderservice.model.Order;
 import by.antonpaulavets.orderservice.repository.OrderRepository;
+import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
-import java.util.Optional;
+import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
 public class OrderService {
-    private final OrderRepository orderRepository;
+    private OrderRepository orderRepository;
+    private UserClient userClient;
+    private OrderMapper orderMapper;
 
-    public Order createOrder(Order order) {
-        return orderRepository.save(order);
+    public OrderResponseDto createOrder(OrderDto dto) {
+        Order order = orderMapper.toEntity(dto);
+        orderRepository.save(order);
+        UserDto user = userClient.getUserByEmail("test@mail.com"); // можно подставлять email по userId позже
+        return new OrderResponseDto(orderMapper.toDto(order), user);
     }
 
-    public Optional<Order> getOrderById(Long id) {
-        return orderRepository.findById(id);
+    public OrderResponseDto getOrderById(Long id) {
+        Order order = orderRepository.findById(id)
+                .orElseThrow(() -> new RuntimeException("Order not found"));
+        UserDto user = userClient.getUserByEmail("test@mail.com");
+        return new OrderResponseDto(orderMapper.toDto(order), user);
     }
 
-    public List<Order> getOrdersByIds(List<Long> ids) {
-        return orderRepository.findAllById(ids);
+    @Transactional
+    public OrderResponseDto updateOrder(Long id, OrderDto dto) {
+        Order order = orderRepository.findById(id)
+                .orElseThrow(() -> new RuntimeException("Order not found"));
+        order.setStatus(dto.getStatus());
+        orderRepository.save(order);
+        UserDto user = userClient.getUserByEmail("test@mail.com");
+        return new OrderResponseDto(orderMapper.toDto(order), user);
     }
 
-    public List<Order> getOrdersByStatuses(List<String> statuses) {
-        return orderRepository.findByStatusIn(statuses);
-    }
-
-    public Order updateOrder(Long id, Order updatedOrder) {
-        return orderRepository.findById(id).map(order -> {
-            order.setStatus(updatedOrder.getStatus());
-            return orderRepository.save(order);
-        }).orElseThrow(() -> new RuntimeException("Order not found"));
-    }
-
+    @Transactional
     public void deleteOrder(Long id) {
         orderRepository.deleteById(id);
+    }
+
+    public List<OrderResponseDto> getOrdersByStatuses(List<String> statuses) {
+        return orderRepository.findByStatusIn(statuses)
+                .stream()
+                .map(order -> {
+                    UserDto user = userClient.getUserByEmail("test@mail.com");
+                    return new OrderResponseDto(orderMapper.toDto(order), user);
+                })
+                .collect(Collectors.toList());
     }
 }
