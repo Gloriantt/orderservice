@@ -23,7 +23,7 @@ public class OrderService {
     public OrderResponseDto createOrder(OrderDto dto) {
         Order order = orderMapper.toEntity(dto);
         orderRepository.save(order);
-        UserDto user = userClient.getUserByEmail("test@mail.com"); // можно подставлять email по userId позже
+        UserDto user = userClient.getUserByEmail("test@mail.com"); 
         return new OrderResponseDto(orderMapper.toDto(order), user);
     }
 
