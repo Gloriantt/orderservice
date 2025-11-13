@@ -3,6 +3,7 @@ package by.antonpaulavets.orderservice.service;
 
 import by.antonpaulavets.orderservice.client.UserClient;
 import by.antonpaulavets.orderservice.dto.*;
+import by.antonpaulavets.orderservice.exception.OrderNotFoundException;
 import by.antonpaulavets.orderservice.mapper.OrderMapper;
 import by.antonpaulavets.orderservice.model.Order;
 import by.antonpaulavets.orderservice.repository.OrderRepository;
@@ -23,13 +24,13 @@ public class OrderService {
     public OrderResponseDto createOrder(OrderDto dto) {
         Order order = orderMapper.toEntity(dto);
         orderRepository.save(order);
-        UserDto user = userClient.getUserByEmail("test@mail.com"); // можно подставлять email по userId позже
+        UserDto user = userClient.getUserByEmail("test@mail.com");
         return new OrderResponseDto(orderMapper.toDto(order), user);
     }
 
     public OrderResponseDto getOrderById(Long id) {
         Order order = orderRepository.findById(id)
-                .orElseThrow(() -> new RuntimeException("Order not found"));
+                .orElseThrow(() -> new OrderNotFoundException(id));
         UserDto user = userClient.getUserByEmail("test@mail.com");
         return new OrderResponseDto(orderMapper.toDto(order), user);
     }
