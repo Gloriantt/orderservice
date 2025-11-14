@@ -8,6 +8,7 @@ import by.antonpaulavets.orderservice.mapper.OrderMapper;
 import by.antonpaulavets.orderservice.model.Order;
 import by.antonpaulavets.orderservice.repository.OrderRepository;
 import jakarta.transaction.Transactional;
+import lombok.AllArgsConstructor;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
@@ -16,6 +17,7 @@ import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
+@AllArgsConstructor
 public class OrderService {
     private OrderRepository orderRepository;
     private UserClient userClient;
