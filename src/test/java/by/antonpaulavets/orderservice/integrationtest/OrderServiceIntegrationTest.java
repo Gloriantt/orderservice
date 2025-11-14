@@ -42,7 +42,6 @@ public class OrderServiceIntegrationTest {
 
     @BeforeAll
     static void setup() {
-        // Подставляем URL в Feign Client
         System.setProperty("user.service.url", userMock.getBaseUrl());
 
         // Мокаем вызов UserService
